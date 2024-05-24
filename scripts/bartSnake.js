@@ -1,6 +1,8 @@
 let mapSize,
   snakePartSize,
   snakePartRadius,
+  maxSnakeLengthX,
+  maxSnakeLengthY,
   snakeParts,
   pointsPerSpeedUp,
   speedDivider,
@@ -19,21 +21,23 @@ let mapSize,
 
 function preload() {
   music = loadSound("./assets/Sneaky-Snitch(chosic.com).mp3");
-	biteSound = loadSound("./assets/Apple_Bite-Simon_Craggs-1683647397.mp3");
+  biteSound = loadSound("./assets/Apple_Bite-Simon_Craggs-1683647397.mp3");
 }
 
 function setup() {
-  mapSize = 750;
-  createCanvas(mapSize, mapSize);
+  mapSize = [1600, 900];
+  createCanvas(mapSize[0], mapSize[1]);
 
-  snakePartSize = 50;
+  snakePartSize = 100;
   snakePartRadius = snakePartSize / 2;
+  maxSnakeLengthX = mapSize[0] / snakePartSize;
+  maxSnakeLengthY = mapSize[1] / snakePartSize;
   rectMode(CENTER);
   snakeParts = [
     [
       snakePartRadius,
       snakePartRadius,
-      color(random(100, 255), random(100, 255), random(100, 255)),
+      color(random(100, 256), random(100, 256), random(100, 256)),
     ],
   ];
   speedDivider = 30;
@@ -46,22 +50,22 @@ function setup() {
   maxFruitSize = 30;
   fruits = [
     [
-      width / 2,
-      height / 2,
+      snakePartRadius + snakePartSize * 2,
+      snakePartRadius,
       random(minFruitSize, maxFruitSize),
-      color(random(100, 255), random(100, 255), random(100, 255)),
+      color(random(100, 256), random(100, 256), random(100, 256)),
     ],
     [
-      (width * 2) / 5,
-      height / 4,
+      snakePartRadius + snakePartSize * 3,
+      snakePartRadius + snakePartSize * 2,
       random(minFruitSize, maxFruitSize),
-      color(random(100, 255), random(100, 255), random(100, 255)),
+      color(random(100, 256), random(100, 256), random(100, 256)),
     ],
     [
-      (width * 4) / 5,
-      (height * 2) / 5,
+      snakePartRadius + snakePartSize * 8,
+      snakePartRadius + snakePartSize * 5,
       random(minFruitSize, maxFruitSize),
-      color(random(100, 255), random(100, 255), random(100, 255)),
+      color(random(100, 256), random(100, 256), random(100, 256)),
     ],
   ];
 
@@ -70,78 +74,78 @@ function setup() {
   scoreTextColor = color(255);
   textAlign(CENTER, CENTER);
   textSize(80);
-
+  
   music.loop();
   music.play();
 }
 
-function handleFruitEating() {
+function getNewFruitCoords() {
+  fruitX = snakePartRadius + snakePartSize * int(random(0, maxSnakeLengthX));
+  fruitY = snakePartRadius + snakePartSize * int(random(0, maxSnakeLengthY));
+  for (let fruit of fruits) {
+    if (fruitX === fruit[0] && fruitY === fruit[1]) return getNewFruitCoords();
+  }
+  for (let snakePart of snakeParts) {
+    if (fruitX === snakePart[0] && fruitY === snakePart[1])
+      return getNewFruitCoords();
+  }
+  return [fruitX, fruitY];
+}
+
+function redrawFruits() {
   for (let i = fruits.length - 1; i >= 0; --i) {
     if (
-      snakeParts[0][0] - snakePartRadius <= fruits[i][0] &&
-      snakeParts[0][0] + snakePartRadius >= fruits[i][0] &&
-      snakeParts[0][1] - snakePartRadius <= fruits[i][1] &&
-      snakeParts[0][1] + snakePartRadius >= fruits[i][1]
+      snakeParts[0][0] === fruits[i][0] &&
+      snakeParts[0][1] === fruits[i][1]
     ) {
 	    biteSound.play();
+      ++score;
+      if (score % pointsPerSpeedUp === 0) {
+		    speedDivider -= 1;
 		
-      fruitX = random(minFruitSize / 2, mapSize - minFruitSize / 2);
-      fruitY = random(minFruitSize / 2, mapSize - minFruitSize / 2);
-      /*let pixel = get(fruitX, fruitY); //
-      while (!(red(pixel) === 0 && green(pixel) === 0 && blue(pixel) === 0)) {
-        fruitX = random(minFruitSize / 2, mapSize - minFruitSize / 2);
-        fruitY = random(minFruitSize / 2, mapSize - minFruitSize / 2);
-        pixel = get(fruitX, fruitY);
-      }*/
+		    let currentTime = music.currentTime();
+		    music.stop();
+		    let currentRate = music.rate();
+		    music.rate(currentRate + 0.08);
+		    music.jump(currentTime);
+		    music.play();
+	    }
+
+      fruitCoords = getNewFruitCoords();
       fruits[i] = [
-        fruitX,
-        fruitY,
+        fruitCoords[0],
+        fruitCoords[1],
         random(minFruitSize, maxFruitSize),
-        color(random(100, 255), random(100, 255), random(100, 255)),
+        color(random(100, 256), random(100, 256), random(100, 256)),
       ];
 
       let newSnakePart = [
         -1,
         -1,
-        color(random(100, 255), random(100, 255), random(100, 255)),
+        color(random(100, 256), random(100, 256), random(100, 256)),
       ];
       snakeParts.push(newSnakePart);
-
-      ++score;
-      if (score % pointsPerSpeedUp === 0) {
-        speedDivider -= 1;
-
-      let currentTime = music.currentTime();
-      music.stop();
-      let currentRate = music.rate();
-      music.rate(currentRate + 0.08);
-      music.jump(currentTime);
-      music.play();
-      } 
-      continue;
+    } else {
+      fill(fruits[i][3]);
+      noStroke();
+      circle(fruits[i][0], fruits[i][1], fruits[i][2]);
     }
-    fill(fruits[i][3]);
-    noStroke();
-    circle(fruits[i][0], fruits[i][1], fruits[i][2]);
   }
 }
 
-function moveSnakeParts() {
-  let snakeHeadNewPosition = [snakeParts[0][0], snakeParts[0][1]];
-  snakeHeadNewPosition[direction[0]] =
-    (((snakeHeadNewPosition[direction[0]] + snakePartSize * direction[1]) %
-      mapSize) +
-      mapSize) %
-    mapSize;
+function moveSnake() {
+  let newSnakeHead = [...snakeParts[0]];
+  let mapSizeInTurnDirection = mapSize[direction[0]];
+  newSnakeHead[direction[0]] = (((newSnakeHead[direction[0]] + snakePartSize * direction[1]) % mapSizeInTurnDirection) + mapSizeInTurnDirection) % mapSizeInTurnDirection;
 
   for (let i = snakeParts.length - 1; i >= 1; --i) {
     if (
-      snakeHeadNewPosition[0] === snakeParts[i][0] &&
-      snakeHeadNewPosition[1] === snakeParts[i][1]
+      newSnakeHead[0] === snakeParts[i][0] &&
+      newSnakeHead[1] === snakeParts[i][1]
     ) {
-      snakeParts = [[...snakeHeadNewPosition, snakeParts[0][2]]];
+      snakeParts = [[]];
       score = 0;
-      music.stop();
+	    music.stop();
       music.play();
       break;
     }
@@ -154,24 +158,21 @@ function moveSnakeParts() {
     rect(snakeParts[i][0], snakeParts[i][1], snakePartSize, snakePartSize);
   }
 
+  snakeParts[0] = [...newSnakeHead];
   fill(snakeParts[0][2]);
   noStroke();
-  snakeParts[0][direction[0]] =
-    (((snakeParts[0][direction[0]] + snakePartSize * direction[1]) % mapSize) +
-      mapSize) %
-    mapSize;
   rect(snakeParts[0][0], snakeParts[0][1], snakePartSize, snakePartSize);
 }
 
 function redrawScoreText() {
   if (frameCount) fill(scoreTextColor);
-  text("Score: " + score, width / 2, scoreTextY);
+  text("Score: " + score, mapSize[0] / 2, scoreTextY);
 }
 
 function redrawMap() {
-  background(0);
-  handleFruitEating();
-  moveSnakeParts();
+  background(10);
+  redrawFruits();
+  moveSnake();
   redrawScoreText();
 }
 function draw() {
