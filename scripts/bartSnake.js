@@ -73,10 +73,10 @@ function setup() {
   ];
 
   score = 0;
-  scoreTextY = 60;
+  scoreTextY = 80;
   scoreTextColor = color(255);
   textAlign(CENTER, CENTER);
-  textSize(80);
+  textSize(100);
 
   music.loop();
   music.play();
