@@ -1,6 +1,6 @@
 # bart-snake
 ### A p5.js snake genre game.
-### ![obraz](https://github.com/Bart-coding/bart-snake/assets/74357483/617bdfb7-153f-4ebc-acbe-c7b9b6b34172)
+### ![obraz](https://github.com/Bart-coding/bart-snake/assets/74357483/4112b167-d21f-4f42-8d1b-33ee3cd3cc5c)
 
 ### To play the game, you will probably have to use [a local server](https://github.com/processing/p5.js/wiki/Local-server), but you can also run the game without sound [here](https://editor.p5js.org/Bart-coding/full/nxthFaweI).
 
