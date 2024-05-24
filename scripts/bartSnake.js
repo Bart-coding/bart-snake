@@ -4,6 +4,7 @@ let mapSize,
   maxSnakeLengthX,
   maxSnakeLengthY,
   snakeParts,
+  eyesDistFromHeadCenter,
   pointsPerSpeedUp,
   speedDivider,
   direction,
@@ -40,6 +41,8 @@ function setup() {
       color(random(100, 256), random(100, 256), random(100, 256)),
     ],
   ];
+  eyesDistFromHeadCenter = snakePartRadius * 0.6;
+
   speedDivider = 30;
   pointsPerSpeedUp = 4;
   direction = [0, 1];
@@ -74,7 +77,7 @@ function setup() {
   scoreTextColor = color(255);
   textAlign(CENTER, CENTER);
   textSize(80);
-  
+
   music.loop();
   music.play();
 }
@@ -98,18 +101,18 @@ function redrawFruits() {
       snakeParts[0][0] === fruits[i][0] &&
       snakeParts[0][1] === fruits[i][1]
     ) {
-	    biteSound.play();
+      biteSound.play();
       ++score;
       if (score % pointsPerSpeedUp === 0) {
-		    speedDivider -= 1;
-		
-		    let currentTime = music.currentTime();
+        speedDivider -= 1;
+
+        let currentTime = music.currentTime();
 		    music.stop();
 		    let currentRate = music.rate();
 		    music.rate(currentRate + 0.08);
 		    music.jump(currentTime);
 		    music.play();
-	    }
+      }
 
       fruitCoords = getNewFruitCoords();
       fruits[i] = [
@@ -133,10 +136,64 @@ function redrawFruits() {
   }
 }
 
+function redrawSnakeEyes() {
+  let leftEyeCoords = [];
+  let rightEyeCoords = [];
+  if (direction[0] === 0 && direction[1] === 1) {
+    leftEyeCoords = [
+      snakeParts[0][0] - eyesDistFromHeadCenter,
+      snakeParts[0][1] - eyesDistFromHeadCenter,
+    ];
+    rightEyeCoords = [
+      snakeParts[0][0] - eyesDistFromHeadCenter,
+      snakeParts[0][1] + eyesDistFromHeadCenter,
+    ];
+  } else if (direction[0] === 0 && direction[1] === -1) {
+    leftEyeCoords = [
+      snakeParts[0][0] + eyesDistFromHeadCenter,
+      snakeParts[0][1] + eyesDistFromHeadCenter,
+    ];
+    rightEyeCoords = [
+      snakeParts[0][0] + eyesDistFromHeadCenter,
+      snakeParts[0][1] - eyesDistFromHeadCenter,
+    ];
+  } else if (direction[0] === 1 && direction[1] === -1) {
+    leftEyeCoords = [
+      snakeParts[0][0] - eyesDistFromHeadCenter,
+      snakeParts[0][1] + eyesDistFromHeadCenter,
+    ];
+    rightEyeCoords = [
+      snakeParts[0][0] + eyesDistFromHeadCenter,
+      snakeParts[0][1] + eyesDistFromHeadCenter,
+    ];
+  } else {
+    leftEyeCoords = [
+      snakeParts[0][0] + eyesDistFromHeadCenter,
+      snakeParts[0][1] - eyesDistFromHeadCenter,
+    ];
+    rightEyeCoords = [
+      snakeParts[0][0] - eyesDistFromHeadCenter,
+      snakeParts[0][1] - eyesDistFromHeadCenter,
+    ];
+  }
+  circle(leftEyeCoords[0], leftEyeCoords[1], snakePartSize / 5);
+  circle(rightEyeCoords[0], rightEyeCoords[1], snakePartSize / 5);
+  fill(color(250));
+  circle(leftEyeCoords[0], leftEyeCoords[1], snakePartSize / 10);
+  circle(rightEyeCoords[0], rightEyeCoords[1], snakePartSize / 10);
+  fill(color(50));
+  circle(leftEyeCoords[0], leftEyeCoords[1], snakePartSize / 30);
+  circle(rightEyeCoords[0], rightEyeCoords[1], snakePartSize / 30);
+}
+
 function moveSnake() {
   let newSnakeHead = [...snakeParts[0]];
   let mapSizeInTurnDirection = mapSize[direction[0]];
-  newSnakeHead[direction[0]] = (((newSnakeHead[direction[0]] + snakePartSize * direction[1]) % mapSizeInTurnDirection) + mapSizeInTurnDirection) % mapSizeInTurnDirection;
+  newSnakeHead[direction[0]] =
+    (((newSnakeHead[direction[0]] + snakePartSize * direction[1]) %
+      mapSizeInTurnDirection) +
+      mapSizeInTurnDirection) %
+    mapSizeInTurnDirection;
 
   for (let i = snakeParts.length - 1; i >= 1; --i) {
     if (
@@ -145,7 +202,7 @@ function moveSnake() {
     ) {
       snakeParts = [[]];
       score = 0;
-	    music.stop();
+      music.stop();
       music.play();
       break;
     }
@@ -162,6 +219,9 @@ function moveSnake() {
   fill(snakeParts[0][2]);
   noStroke();
   rect(snakeParts[0][0], snakeParts[0][1], snakePartSize, snakePartSize);
+  fill(color(80));
+
+  redrawSnakeEyes();
 }
 
 function redrawScoreText() {
@@ -170,7 +230,7 @@ function redrawScoreText() {
 }
 
 function redrawMap() {
-  background(10);
+  background(0);
   redrawFruits();
   moveSnake();
   redrawScoreText();
