@@ -7,15 +7,18 @@ let mapSize,
   eyesDistFromHeadCenter,
   pointsPerSpeedUp,
   speedDivider,
+  maxSpeedDivider,
   direction,
   fruits,
   minFruitSize,
   maxFruitSize,
   score,
+  scoreTextSize,
   scoreTextY,
   scoreTextColor,
   framesPerTurn,
   lastTurnFrameCount,
+  gameStarted,
   music,
   biteSound,
   musicRate;
@@ -28,6 +31,13 @@ function preload() {
 function setup() {
   mapSize = [1600, 900];
   createCanvas(mapSize[0], mapSize[1]);
+
+  background(0);
+  redrawScoreText();
+  fill(color(100, 250, 100));
+  textAlign(CENTER, CENTER);
+  textSize(180);
+  text("Click to start!", mapSize[0] / 2, mapSize[1] / 2);
 
   snakePartSize = 100;
   snakePartRadius = snakePartSize / 2;
@@ -43,7 +53,8 @@ function setup() {
   ];
   eyesDistFromHeadCenter = snakePartRadius * 0.6;
 
-  speedDivider = 30;
+  maxSpeedDivider = 30;
+  speedDivider = maxSpeedDivider;
   pointsPerSpeedUp = 4;
   direction = [0, 1];
   framesPerTurn = 10;
@@ -73,10 +84,12 @@ function setup() {
   ];
 
   score = 0;
+  scoreTextSize = 100;
   scoreTextY = 80;
   scoreTextColor = color(255);
-  textAlign(CENTER, CENTER);
-  textSize(100);
+  textSize(scoreTextSize);
+  
+  gameStarted = false;
 
   music.loop();
   music.play();
@@ -112,7 +125,7 @@ function redrawFruits() {
 		    music.rate(currentRate + 0.08);
 		    music.jump(currentTime);
 		    music.play();
-      }
+      } 
 
       fruitCoords = getNewFruitCoords();
       fruits[i] = [
@@ -202,6 +215,7 @@ function moveSnake() {
     ) {
       snakeParts = [[]];
       score = 0;
+      speedDivider = maxSpeedDivider;
       music.stop();
       music.play();
       break;
@@ -236,6 +250,8 @@ function redrawMap() {
   redrawScoreText();
 }
 function draw() {
+  if (!gameStarted) return;
+  
   let redrawed = false;
   if (lastTurnFrameCount === 0) {
     if (keyIsDown(LEFT_ARROW) && !(direction[0] === 0)) {
@@ -265,4 +281,8 @@ function draw() {
   if (!redrawed && frameCount % speedDivider === 0) {
     redrawMap();
   }
+}
+
+function mouseClicked() {
+  gameStarted = true;
 }
